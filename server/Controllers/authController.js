@@ -21,34 +21,26 @@ const createJWT = (email, id) => {
 
 export const signup = async (req, res) => {
   const { email, password } = req.body;
-  // console.log("req: " + JSON.stringify(req.body));
 
   try {
     //Creating hashedPassword with 12 characters Salt
     const hashedPassword = await bcrypt.hash(password, 12);
-    // console.log("hashedPassword: " + hashedPassword);
-    //Created User info
+    //Created User infow
     const result = await User.create({
       email,
       hash: hashedPassword,
     });
-    // console.log("result: " + result);
     //Created JWT
     const token = createJWT(result.email, result._id);
-    // console.log("token: " + token);
 
     res.status(201).json({ result, token });
   } catch (error) {
-    // console.log("err: " + error);
     res.status(500).json({ message: error });
-
-    console.log(error);
   }
 };
 
 export const signin = async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const oldUser = await User.findOne({ email });
 

@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-const url = "http://localhost:5432/signup";
+import * as api from "../api/index.js";
 
 const initialState = {
   authData: {},
@@ -8,8 +7,7 @@ const initialState = {
 
 export const signup = createAsyncThunk("user/signup", async (data) => {
   try {
-    const response = await axios.post(url, data);
-    //console.log(response.data);
+    const response = await api.signUp(data);
     return response.data;
   } catch (err) {
     if (err.response.data.message.code === 11000) {
@@ -20,32 +18,46 @@ export const signup = createAsyncThunk("user/signup", async (data) => {
     }
   }
 });
+
+export const signin = createAsyncThunk("user/signin", async (data) => {
+  try {
+    const response = await api.signIn(data);
+    return response.data;
+  } catch (err) {
+    console.error(err);
+  }
+});
+
 const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {
-    auth: (state, action) => {
-      localStorage.setItem("profile", JSON.stringify({ ...action?.data }));
-      state.user = action.payload;
-    },
-  },
+  reducers: {},
   extraReducers: {
     [signup.pending]: (state) => {
       state.isLoading = true;
     },
     [signup.fulfilled]: (state, action) => {
-      // console.log(action);
+      localStorage.setItem("profile", JSON.stringify({ ...action?.payload }));
       state.isLoading = false;
       state.authData = action.payload;
     },
-    [signup.rejected]: (state, action) => {
+    [signup.rejected]: (state) => {
+      state.isLoading = false;
+    },
+    [signin.pending]: (state) => {
+      state.isLoading = true;
+    },
+    [signin.fulfilled]: (state, action) => {
+      state.isLoading = false;
+      localStorage.setItem("profile", JSON.stringify({ ...action?.payload }));
+      state.authData = action.payload;
+    },
+    [signin.rejected]: (state) => {
       state.isLoading = false;
     },
   },
 });
 
-// console.log(cartSlice);
-export const { auth, removeItem, increase, decrease, calculateTotals } =
-  userSlice.actions;
+//export const {} = userSlice.actions;
 
 export default userSlice.reducer;

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 // import * as api from "../../api";
 import { useDispatch } from "react-redux";
-import { signup } from "../../features/userSlice";
+import { signup, signin } from "../../features/userSlice";
+import { useNavigate } from "react-router-dom";
 import {
   TextInput,
   PasswordInput,
@@ -20,22 +21,29 @@ const initialState = {
 
 const SignUp = () => {
   const [form, setForm] = useState(initialState);
+  const [isSignup, setIsSignup] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    JSON.parse(localStorage.getItem("profile"))
+  );
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  console.log(isLoggedIn);
+  const switchMode = (e) => {
+    e.preventDefault();
+    setIsSignup((prevIsSignup) => !prevIsSignup);
+  };
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // const createUser = async (form) => {
-  //   try {
-  //     const { data } = await api.signUp(form);
-  //     console.log(data);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(signup(form));
+
+    if (isSignup) {
+      dispatch(signin(form)).then(() => navigate("/"));
+    } else {
+      dispatch(signup(form));
+    }
   };
   return (
     <Container size={420} my={40}>
@@ -46,14 +54,16 @@ const SignUp = () => {
           fontWeight: 900,
         })}
       >
-        Welcome!
+        Hello! Here is your {isSignup ? "Sign In" : "Sign Up"} Form
       </Title>
+
       <Text color="dimmed" size="sm" align="center" mt={5}>
-        Already have an account?{" "}
-        <Anchor href="#" size="sm">
-          Sign In
+        {isSignup ? "Don't you have an account? " : "Already have an account? "}
+        <Anchor component="button" type="button" onClick={switchMode} size="sm">
+          {isSignup ? "Sign Up" : "Sign In"}
         </Anchor>
       </Text>
+
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <TextInput
           name="email"
@@ -72,7 +82,7 @@ const SignUp = () => {
         />
 
         <Button onClick={handleSubmit} fullWidth mt="xl">
-          Sign Up
+          {isSignup ? "Sign In" : "Sign Up"}
         </Button>
       </Paper>
     </Container>
